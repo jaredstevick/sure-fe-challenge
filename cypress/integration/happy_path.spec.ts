@@ -7,11 +7,15 @@ describe('happy path', () => {
     cy.getTestEl('you_go_link').should('be.visible');
     cy.getTestEl('policyholders_link').should('be.visible');
 
-    /**
-     * TODO: Challenge 10 - Update this test
-     * - Click the Policyholders sidebar link
-     * - Assert that a network request is made
-     * - Assert that data from the network is displayed
-     */
+    cy.intercept('GET', '/api/policyholders').as('loadPolicyholders')
+    cy.get('a[href*="policyholders"]').click();
+    
+    cy.wait('@loadPolicyholders').then(({ response }) => {
+      expect(response.statusCode).to.eq(200);
+      cy.get('h5').should(($h5) => {
+        const text = $h5.text()
+        expect(text).to.match(/Mrs. Holder/);
+      })
+    });
   });
 });
